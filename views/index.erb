@@ -1,0 +1,7 @@
+<h1>RoHo's MemeTube</h1>
+
+<% @vids.each do |vid| %>
+  <div class="vid">
+    <a href="/videos/<%= vid['id'] %>"><%= vid['title'] %></a><br>
+  </div>
+<% end %>
