@@ -1,7 +1,7 @@
-drop database sinatra_memetube;
-create database sinatra_memetube;
+drop database ajax_memetube;
+create database ajax_memetube;
 
-\connect sinatra_memetube
+\connect ajax_memetube
 drop table videos;
 
 create table videos (

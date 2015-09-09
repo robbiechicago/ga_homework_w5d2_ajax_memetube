@@ -2,8 +2,14 @@ require 'sinatra'
 require 'sinatra/reloader' if development?
 require 'pg'
 require 'pry'
-require 'json'
 
+before do 
+  @db = PG.connect(dbname: 'sinatra_memetube', host: 'localhost')
+end
+
+after do 
+  @db.close
+end
 
 # home
 get '/' do
@@ -13,13 +19,8 @@ end
 # index
 get '/videos' do
   sql = 'SELECT * FROM videos'
-  @vids = run_sql(sql)
-
-  if request.xhr?
-    json @items.entries
-  else
-    erb :index
-  end
+  @vids = @db.exec(sql)
+  erb :index
 end
 
 get '/videos/new' do
@@ -28,16 +29,11 @@ end
 
 # show
 get '/videos/:id' do
+  # binding.pry
   sql = "SELECT * FROM videos WHERE id = #{params[:id]}"
-  
-  
-  @vids = run_sql(sql)
-binding.pry
-  if request.xhr?
-    json @items.entries
-  else
-    erb :player
-  end
+  @vidurl = @db.exec(sql).first
+  # WTF is that .first doing?  I know I need it but don't understand why.
+  erb :player
 end
 
 # create
@@ -46,7 +42,7 @@ post '/videos' do
   @addvid = @db.exec(sql).first
 
   newsql = "SELECT id FROM videos WHERE url = '#{params[:url]}'"
-  # newid = @db.exec(newsql).first
+  newid = @db.exec(newsql).first
   # binding.pry
   redirect to "/videos/#{newid['id']}"
 end
@@ -54,7 +50,7 @@ end
 # edit
 get '/videos/:id/edit' do
   sql = "SELECT * FROM videos WHERE id = #{params[:id]}"
-  # @editvid = @db.exec(sql).first
+  @editvid = @db.exec(sql).first
   erb :edit
 end
 
@@ -64,7 +60,7 @@ post '/videos/:id' do
   @db.exec(sql)
 
   newsql = "SELECT id FROM videos WHERE url = '#{params[:url]}'"
-  # newid = @db.exec(newsql).first
+  newid = @db.exec(newsql).first
   redirect to "/videos/#{newid['id']}"
 end
 
@@ -73,17 +69,7 @@ post '/videos/:id/delete' do
 
 end
 
-private
-def run_sql(sql)
-  conn = PG.connect(:dbname =>'ajax_memetube', :host => 'localhost')
-  begin
-    result = conn.exec(sql)
-  ensure
-    conn.close
-  end
 
-  result
-end
 
 
 
